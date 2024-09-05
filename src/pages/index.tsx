@@ -25,30 +25,41 @@ export default function Home() {
 
   const AddTodo = (title: string, desc: string) => {
     const newTodo: Todo = {
-      id: todos.length + 1,
+      id: Date.now(), //use the timestamp to make sure i don't get a duplicated id when manipulating the items
       title: title,
       description: desc,
       isCompleted: false,
       isUrgent: false,
     };
-
-    todos.push(newTodo);
-    setTodos(todos);
+    
+    // create a new array spreading the current todos and adding the new one 
+    setTodos([...todos,newTodo]);
   };
 
   const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id === id));
+    //Filter out the todo with the clicked id and creating a new array with the remaining items
+    const updatedTodos = todos.filter((todo) => todo.id !== id );
+    
+    //update the state with the filtered list
+    setTodos(updatedTodos);
   };
 
   const toggleProperty = useCallback((id: number, property: keyof Pick<Todo, 'isCompleted' | 'isUrgent'>) => {
     const updatedTodos = todos.map((todo) => {
+      //create a new array for todo that is being updated
       if (todo.id === id) {
-        todo[property] = !todo[property] as boolean;
+        return {
+          ...todo,
+          [property]: !todo[property],
+        };        
       }
-      return todo;
+      return todo; //return unchanged todo for others
     });
-    setTodos(updatedTodos);
-  }, [setTodos]);
+
+      setTodos(updatedTodos);
+    },
+    [todos]
+  );
 
   const displayTodoList = (todoList:Todo[]) => {
     return (
@@ -62,12 +73,8 @@ export default function Home() {
   };
 
   const displayTodos = (displayUrgent: boolean) => {
-    return displayTodoList(todos.filter((x) => {
-      if (displayUrgent) {
-        return !x.isCompleted && x.isUrgent === displayUrgent;
-      } else {
-        return !x.isCompleted && x.isUrgent !== displayUrgent;
-      }
+    return displayTodoList(todos.filter((x) => {      
+        return !x.isCompleted && x.isUrgent === displayUrgent;      
     }));
   };
 
